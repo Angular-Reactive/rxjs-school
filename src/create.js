@@ -5,6 +5,9 @@
  * Finalizando el flujo de datos desde el propio Observable a 
  * traves del metodo observer.complete(), y como cancellar la 
  * subscripcion desde fuera con el metodo unsubscribe de la subscripcion.
+ * 
+ * Cada subscripcion al Observable implica una nueva ejecucion de todo el 
+ * flujo de datos. 
  */
 import { displayLog } from './utils';
 import { Observable } from 'rxjs';
