@@ -1,5 +1,5 @@
 import { updateDisplay } from './utils';
-import { fromEvent } from 'rxjs';
+import { fromEvent, Subject, BehaviorSubject } from 'rxjs';
 import { map, tap, share } from 'rxjs/operators';
 
 export default () => {
@@ -25,16 +25,25 @@ export default () => {
             const docHeight = docElement.scrollHeight - docElement.clientHeight;
             return (evt / docHeight) * 100;
         }),
-        share()
+        // share()
     )
 
+    // const scrollProgressHot$ = new Subject();
+    const scrollProgressHot$ = new BehaviorSubject(0);
+
+    scrollProgress$.subscribe(scrollProgressHot$);
+
     //subscribe to scroll progress to paint a progress bar
-    const subscription = scrollProgress$.subscribe(updateProgressBar);
+    const subscription = scrollProgressHot$.subscribe(updateProgressBar);
 
     //subscribe to display scroll progress percentage
-    const subscription2 = scrollProgress$.subscribe(
+    const subscription2 = scrollProgressHot$.subscribe(
         val => updateDisplay(`${ Math.floor(val) } %`)
     );
+
+    // scrollProgressHot$.next(0);
+
+    console.log('scroll initial state: ', scrollProgressHot$.value);
 
     /** end coding */
 }
