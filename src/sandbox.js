@@ -1,7 +1,7 @@
 import { updateDisplay, displayLog } from './utils';
 import { api } from './api';
-import { merge, fromEvent } from 'rxjs';
-import { map, endWith } from 'rxjs/operators';
+import { merge, fromEvent, concat, forkJoin } from 'rxjs';
+import { map, endWith, tap } from 'rxjs/operators';
 
 export default () => {
     /** start coding */
@@ -17,12 +17,28 @@ export default () => {
         const comment4$ = api.getComment(4);
 
         //subscribe to all the observables to get and display comments
-        merge(comment1$, comment2$, comment3$, comment4$).pipe(
+        /*merge(comment1$, comment2$, comment3$, comment4$).pipe(
             map(({id, comment}) => `#${id} - ${comment}`),
             endWith('--------//--------')
         ).subscribe(data =>{
             displayLog(data);
-        })
+        })*/
+
+        /*concat(comment1$, comment2$, comment3$, comment4$).pipe(
+            map(({id, comment}) => `#${id} - ${comment}`),
+            tap((id,)=> console.log(`${id} `)),
+            endWith('--------//--------')
+        ).subscribe(data =>{
+            displayLog(data);
+        })*/ 
+        
+        forkJoin(comment1$, comment2$, comment3$, comment4$).pipe(
+            map(JSON.stringify),
+            tap((evt) => console.log(JSON.stringify(evt))),
+            endWith('--------//--------')
+        ).subscribe(data =>{
+            displayLog(data);
+        })          
     }
 
     /** get comments on button click */
