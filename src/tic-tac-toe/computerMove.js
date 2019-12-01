@@ -5,8 +5,7 @@ import { Subject, timer } from 'rxjs';
 
 export const computerMove$ = new Subject(); 
 
-// Esta funcion recibira un un array de coordenadas validas
-// y va a elegir una como un movimiento del sistema
+// Esta funcion sirve a simular los movimientos del sistema y el Subject computerMove$.
 export const simulateComputerTurnFn = (validCells) => {
     const randomCell = Math.floor(Math.random() * validCells.length);
 

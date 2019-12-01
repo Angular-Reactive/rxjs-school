@@ -1,7 +1,8 @@
-import { Observable, merge } from 'rxjs';
-import { computerMove$ } from './computerMove';
+import { Observable , merge} from 'rxjs';
+import { computerMove$, simulateComputerTurnFn } from './computerMove';
 import { userMove$ } from './userMove';
-import { scan, startWith } from 'rxjs/operators';
+import { scan, startWith, tap, takeWhile } from 'rxjs/operators';
+import { gameState$ } from './gameState';
 
 //pure function to find out empty cells
 export const getEmptyCells = (board) =>{
@@ -62,18 +63,29 @@ const updateGameStateFn = (gameState, move) => {
     }
 
 }
-
-//initial game state
-const initialGame = {
-    board: Array(3).fill().map(() => Array(3).fill(0)),
-    nextPlayer: 1,
-    finished: false,
-    winner: null
-}
     
 
-//main observable with the game logic. Right now only emiting the board
+// Este es el stream principal de datos que se crea a partir de los movimientos del usuario
+// y del sistema.
+// Se utiliza el operador "scan" para inicializar y devolver el estado actualizado de la partida
+// en funcion de los movimientos.
+// Cuando le toca al sistema, se ha anadido un efecto colateral para simular su movimiento,
+// y se completa la partida cuando cuando la variable "finished" es true.
+//
+// Comoe "userMove$" necesita conocer el estado y tenia una dependencia circular con "game$" que
+// es donde esta el estado, se ha tenido que crear un Subject intermedio a modo de proxy.
+// Este Subject ha emitido el estado de la partida a cada cambio gracias al primer "tap" presente
+// en el flujo "game$"
 export const game$ = merge(userMove$, computerMove$).pipe(
     startWith(null),
-    scan(updateGameStateFn, initialGame)
+    // receiving the update accumulated state and emiting through the gameState$ proxy
+    scan(updateGameStateFn, gameState$.value),
+    // gameState$ will emit the same previous value
+    tap(state => gameState$.next(state)),
+    tap(state => {
+        if(state.nextPlayer == 2 && !state.finished) {
+            simulateComputerTurnFn(getEmptyCells(state.board));
+        }
+    }),
+    takeWhile(({finished}) => finished == false, true)
 );
